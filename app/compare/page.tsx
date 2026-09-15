@@ -14,7 +14,7 @@ import type { Project } from "@/lib/types";
 const BASELINE_TAB = process.env.BASELINE_TAB_NAME || "";
 const BASELINE_LABEL = process.env.NEXT_PUBLIC_BASELINE_LABEL || "Our Platform";
 
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
 export default async function ComparePage() {
   const tabs = await listTabs();

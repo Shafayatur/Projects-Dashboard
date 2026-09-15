@@ -1,4 +1,4 @@
-import { listTabs, fetchTab } from "@/lib/sheets";
+import { fetchTab } from "@/lib/sheets";
 import { normalizeTab } from "@/lib/normalize";
 import { summarizePlatform } from "@/lib/compare";
 import KpiCard from "@/components/KpiCard";
@@ -8,7 +8,7 @@ import ProjectTable from "@/components/ProjectTable";
 const BASELINE_TAB = process.env.BASELINE_TAB_NAME || "";
 const BASELINE_LABEL = process.env.NEXT_PUBLIC_BASELINE_LABEL || "Our Platform";
 
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
 export default async function PlatformPage({ params }: { params: { slug: string } }) {
   const tabName = decodeURIComponent(params.slug);
@@ -51,11 +51,3 @@ export default async function PlatformPage({ params }: { params: { slug: string 
   );
 }
 
-export async function generateStaticParams() {
-  try {
-    const tabs = await listTabs();
-    return tabs.map((tab) => ({ slug: encodeURIComponent(tab) }));
-  } catch {
-    return [];
-  }
-}

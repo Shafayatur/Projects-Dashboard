@@ -3,7 +3,7 @@ import { listTabs, fetchTab } from "@/lib/sheets";
 import { normalizeTab } from "@/lib/normalize";
 import type { Project } from "@/lib/types";
 
-export const revalidate = 30; // re-fetch from Sheets at most every 30s
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
