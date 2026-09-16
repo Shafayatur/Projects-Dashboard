@@ -83,7 +83,7 @@ export default function CompareClient({
       tenure: `${row.tenure}mo`
     };
     row.stats.forEach((s) => {
-      if (s.maxRate !== null) point[s.platform] = s.maxRate;
+      if (s.rate !== null) point[s.platform] = s.rate;
     });
     return point;
   });

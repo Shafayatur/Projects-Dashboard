@@ -22,20 +22,20 @@ export function distinctCategories(projects: Project[]): string[] {
 export interface TenureStat {
   platform: string;
   count: number;
-  maxRate: number | null;
+  rate: number | null; // sourced from rateTenureBased — the normalized, min-of-range comparison rate
   minInvestment: number | null; // lowest min-investment offered at this tenure
 }
 
 export interface TenureRow {
   tenure: number;
   stats: TenureStat[];
-  rateLeader: string | null;       // highest maxRate
+  rateLeader: string | null;       // highest rate
   accessLeader: string | null;     // lowest minInvestment
 }
 
 /** For every exact tenure value present in the data, compute each platform's
- *  project count, best (max) rate, and lowest min-investment — and who leads
- *  each of those two dimensions. */
+ *  project count, best (highest normalized tenure-based) rate, and lowest
+ *  min-investment — and who leads each of those two dimensions. */
 export function buildTenureTable(projects: Project[], platforms: string[]): TenureRow[] {
   const tenures = distinctTenures(projects);
 
@@ -44,21 +44,21 @@ export function buildTenureTable(projects: Project[], platforms: string[]): Tenu
       const matches = projects.filter(
         (p) => p.platform === platform && p.tenureMonths === tenure
       );
-      const rates = matches.map((p) => p.rateMax).filter((r): r is number => r !== null);
+      const rates = matches.map((p) => p.rateTenureBased).filter((r): r is number => r !== null);
       const invs = matches
         .map((p) => p.minInvestment)
         .filter((v): v is number => v !== null);
       return {
         platform,
         count: matches.length,
-        maxRate: rates.length ? Math.max(...rates) : null,
+        rate: rates.length ? Math.min(...rates) : null,
         minInvestment: invs.length ? Math.min(...invs) : null
       };
     });
 
-    const withRate = stats.filter((s) => s.maxRate !== null);
+    const withRate = stats.filter((s) => s.rate !== null);
     const rateLeader = withRate.length
-      ? withRate.reduce((a, b) => (a.maxRate! > b.maxRate! ? a : b)).platform
+      ? withRate.reduce((a, b) => (a.rate! > b.rate! ? a : b)).platform
       : null;
 
     const withInv = stats.filter((s) => s.minInvestment !== null);
@@ -86,12 +86,12 @@ export function buildScorecard(rows: TenureRow[], platforms: string[]): Scorecar
     rows.forEach((row) => {
       const mine = row.stats.find((s) => s.platform === platform);
       if (mine && mine.count > 0) present++;
-      if (mine && mine.maxRate !== null) {
+      if (mine && mine.rate !== null) {
         const topRate = Math.max(
-          ...row.stats.filter((s) => s.maxRate !== null).map((s) => s.maxRate!)
+          ...row.stats.filter((s) => s.rate !== null).map((s) => s.rate!)
         );
-        if (mine.maxRate === topRate) {
-          const sharedBy = row.stats.filter((s) => s.maxRate === topRate).length;
+        if (mine.rate === topRate) {
+          const sharedBy = row.stats.filter((s) => s.rate === topRate).length;
           if (sharedBy > 1) ties++;
           else wins++;
         }
@@ -149,8 +149,8 @@ export function buildGapAnalysis(
     const base = row.stats.find((s) => s.platform === baseline);
     competitors.forEach((comp) => {
       const other = row.stats.find((s) => s.platform === comp);
-      const baselineRate = base?.maxRate ?? null;
-      const competitorRate = other?.maxRate ?? null;
+      const baselineRate = base?.rate ?? null;
+      const competitorRate = other?.rate ?? null;
       const delta =
         baselineRate !== null && competitorRate !== null
           ? +(baselineRate - competitorRate).toFixed(2)
@@ -252,8 +252,7 @@ export interface PlatformSummary {
 
 export function summarizePlatform(platform: string, projects: Project[]): PlatformSummary {
   const own = projects.filter((p) => p.platform === platform);
-  const rates = own.map((p) => p.rateAvg).filter((r): r is number => r !== null);
-  const allRateVals = own.flatMap((p) => [p.rateMin, p.rateMax]).filter((r): r is number => r !== null);
+  const rates = own.map((p) => p.rateTenureBased).filter((r): r is number => r !== null);
 
   const tenures = distinctTenures(own);
   const tenureCounts = tenures.map((t) => ({
@@ -265,8 +264,8 @@ export function summarizePlatform(platform: string, projects: Project[]): Platfo
     platform,
     projectCount: own.length,
     avgRate: rates.length ? rates.reduce((a, b) => a + b, 0) / rates.length : null,
-    rateMin: allRateVals.length ? Math.min(...allRateVals) : null,
-    rateMax: allRateVals.length ? Math.max(...allRateVals) : null,
+    rateMin: rates.length ? Math.min(...rates) : null,
+    rateMax: rates.length ? Math.max(...rates) : null,
     tenureCounts
   };
 }

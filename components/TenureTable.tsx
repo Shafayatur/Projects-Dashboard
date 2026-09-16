@@ -30,9 +30,9 @@ export default function TenureTable({
               <td className="px-4 py-3 font-mono font-bold text-ink">{row.tenure}mo</td>
               {row.stats.map((s) => (
                 <td key={s.platform} className="px-4 py-3 text-center font-mono">
-                  {s.maxRate !== null ? (
+                  {s.rate !== null ? (
                     <span className={s.platform === row.rateLeader ? "text-lead font-black" : "text-ink"}>
-                      {s.maxRate}%
+                      {s.rate}%
                     </span>
                   ) : (
                     <span className="text-muted">✕</span>
