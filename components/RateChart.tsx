@@ -11,52 +11,48 @@ import {
   Legend
 } from "recharts";
 
-const COLORS = ["#D9A94E", "#2E9B6F", "#6B8FA6", "#C4644A", "#9A7FC4", "#8AA6D9"];
+const COLORS = ["#FFD400", "#3DFF6E", "#3DA5FF", "#FF3B3B", "#FFFFFF", "#B983FF"];
 
 export default function RateChart({
   data,
   platforms,
   labels
 }: {
-  data: { bucket: string; [platform: string]: string | number }[];
+  data: { tenure: string; [platform: string]: string | number }[];
   platforms: string[];
   labels: Record<string, string>;
 }) {
   return (
-    <div className="border border-border bg-surface rounded-lg p-5 h-80">
+    <div className="border-2 border-line p-5 h-96">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-          <CartesianGrid stroke="#2A2F2B" vertical={false} />
+          <CartesianGrid stroke="#333333" vertical={false} />
           <XAxis
-            dataKey="bucket"
-            stroke="#9AA49C"
+            dataKey="tenure"
+            stroke="#8A8A8A"
             fontSize={12}
             tickLine={false}
-            axisLine={{ stroke: "#2A2F2B" }}
+            axisLine={{ stroke: "#FFFFFF" }}
           />
-          <YAxis
-            stroke="#9AA49C"
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-            unit="%"
-          />
+          <YAxis stroke="#8A8A8A" fontSize={12} tickLine={false} axisLine={false} unit="%" />
           <Tooltip
             contentStyle={{
-              background: "#171B18",
-              border: "1px solid #2A2F2B",
-              borderRadius: 8,
+              background: "#000000",
+              border: "2px solid #FFFFFF",
+              borderRadius: 0,
               fontSize: 12
             }}
-            labelStyle={{ color: "#EDEDE6" }}
+            labelStyle={{ color: "#FFFFFF", fontWeight: "bold" }}
           />
           <Legend
             formatter={(value) => (
-              <span style={{ color: "#9AA49C", fontSize: 12 }}>{labels[value] || value}</span>
+              <span style={{ color: "#8A8A8A", fontSize: 12, fontWeight: 600 }}>
+                {labels[value] || value}
+              </span>
             )}
           />
           {platforms.map((p, i) => (
-            <Bar key={p} dataKey={p} fill={COLORS[i % COLORS.length]} radius={[3, 3, 0, 0]} />
+            <Bar key={p} dataKey={p} fill={COLORS[i % COLORS.length]} radius={[2, 2, 0, 0]} />
           ))}
         </BarChart>
       </ResponsiveContainer>

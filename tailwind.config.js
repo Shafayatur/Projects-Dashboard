@@ -4,16 +4,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        bg: "#0F1210",
-        surface: "#171B18",
-        surface2: "#1D221E",
-        border: "#2A2F2B",
-        ink: "#EDEDE6",
-        muted: "#9AA49C",
-        emerald: "#2E9B6F",
-        emeraldSoft: "#1F6B4C",
-        gold: "#D9A94E",
-        red: "#C4644A"
+        bg: "#000000",
+        surface: "#000000",
+        ink: "#FFFFFF",
+        muted: "#8A8A8A",
+        line: "#FFFFFF",
+        lead: "#3DFF6E",   // ahead / winning — vivid, not muted
+        gap: "#FF3B3B",    // behind / gap — vivid, not muted
+        flag: "#FFD400"    // neutral highlight / attention
       },
       fontFamily: {
         sans: ["var(--font-inter)", "sans-serif"],
