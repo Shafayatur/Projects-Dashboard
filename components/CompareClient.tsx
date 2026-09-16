@@ -5,11 +5,11 @@ import type { Project } from "@/lib/types";
 import {
   buildTenureTable,
   buildScorecard,
+  buildAccessScorecard,
   buildGapAnalysis,
   generateInsights,
   categoryGap,
-  distinctCategories,
-  distinctProductTypes
+  distinctCategories
 } from "@/lib/compare";
 import FilterBar from "./FilterBar";
 import RateChart from "./RateChart";
@@ -33,19 +33,16 @@ export default function CompareClient({
 }) {
   const [activePlatforms, setActivePlatforms] = useState<string[]>(platforms);
   const [activeCategory, setActiveCategory] = useState("all");
-  const [activeProductType, setActiveProductType] = useState("all");
 
   const categories = useMemo(() => distinctCategories(allProjects), [allProjects]);
-  const productTypes = useMemo(() => distinctProductTypes(allProjects), [allProjects]);
 
   const filtered = useMemo(() => {
     return allProjects.filter((p) => {
       if (!activePlatforms.includes(p.platform)) return false;
       if (activeCategory !== "all" && p.investmentCategory !== activeCategory) return false;
-      if (activeProductType !== "all" && p.productType !== activeProductType) return false;
       return true;
     });
-  }, [allProjects, activePlatforms, activeCategory, activeProductType]);
+  }, [allProjects, activePlatforms, activeCategory]);
 
   const shownPlatforms = platforms.filter((p) => activePlatforms.includes(p));
   const competitors = shownPlatforms.filter((p) => p !== baseline);
@@ -56,6 +53,10 @@ export default function CompareClient({
   );
   const scorecard = useMemo(
     () => buildScorecard(tenureRows, shownPlatforms),
+    [tenureRows, shownPlatforms]
+  );
+  const accessScorecard = useMemo(
+    () => buildAccessScorecard(tenureRows, shownPlatforms),
     [tenureRows, shownPlatforms]
   );
   const gaps = useMemo(
@@ -78,7 +79,7 @@ export default function CompareClient({
   );
 
   const chartData = tenureRows.map((row) => {
-    const point: { tenure: string; [k: string]: string | number } = {
+    const point: { tenure: string;[k: string]: string | number } = {
       tenure: `${row.tenure}mo`
     };
     row.stats.forEach((s) => {
@@ -104,9 +105,6 @@ export default function CompareClient({
         categories={categories}
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
-        productTypes={productTypes}
-        activeProductType={activeProductType}
-        onProductTypeChange={setActiveProductType}
       />
 
       <div className="mb-10">
@@ -133,17 +131,28 @@ export default function CompareClient({
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 mb-10">
-        <ScorecardPanel scores={scorecard} labels={labels} />
-        <CoverageGrid
-          title="Category coverage"
-          rowLabels={categories}
-          platforms={shownPlatforms}
+        <ScorecardPanel scores={scorecard} labels={labels} title="Rate wins by platform" winLabel="wins" />
+        <ScorecardPanel
+          scores={accessScorecard}
           labels={labels}
-          hasFn={(cat, platform) =>
-            filtered.some((p) => p.platform === platform && p.investmentCategory === cat)
-          }
+          title="Lowest entry cost by platform"
+          winLabel="cheapest"
         />
       </div>
+
+      {categories.length > 0 && (
+        <div className="mb-10">
+          <CoverageGrid
+            title="Category coverage"
+            rowLabels={categories}
+            platforms={shownPlatforms}
+            labels={labels}
+            hasFn={(cat, platform) =>
+              filtered.some((p) => p.platform === platform && p.investmentCategory === cat)
+            }
+          />
+        </div>
+      )}
 
       <div className="mb-10">
         <div className="text-sm text-ink font-bold uppercase tracking-wide mb-1">
@@ -155,7 +164,7 @@ export default function CompareClient({
         <RateChart data={chartData} platforms={shownPlatforms} labels={labels} />
       </div>
 
-      <div className="mb-10">
+      <div>
         <div className="text-sm text-ink font-bold uppercase tracking-wide mb-1">
           Full tenure breakdown
         </div>
@@ -164,23 +173,6 @@ export default function CompareClient({
         </div>
         <TenureTable rows={tenureRows} platforms={shownPlatforms} labels={labels} />
       </div>
-
-      {productTypes.length > 0 && (
-        <div>
-          <div className="text-sm text-ink font-bold uppercase tracking-wide mb-3">
-            Product type coverage
-          </div>
-          <CoverageGrid
-            title="Which platforms offer each product type"
-            rowLabels={productTypes}
-            platforms={shownPlatforms}
-            labels={labels}
-            hasFn={(type, platform) =>
-              filtered.some((p) => p.platform === platform && p.productType === type)
-            }
-          />
-        </div>
-      )}
     </div>
   );
 }

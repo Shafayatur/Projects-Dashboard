@@ -19,14 +19,6 @@ export function distinctCategories(projects: Project[]): string[] {
   return Array.from(set).sort();
 }
 
-export function distinctProductTypes(projects: Project[]): string[] {
-  const set = new Set<string>();
-  projects.forEach((p) => {
-    if (p.productType) set.add(p.productType);
-  });
-  return Array.from(set).sort();
-}
-
 export interface TenureStat {
   platform: string;
   count: number;
@@ -100,6 +92,34 @@ export function buildScorecard(rows: TenureRow[], platforms: string[]): Scorecar
         );
         if (mine.maxRate === topRate) {
           const sharedBy = row.stats.filter((s) => s.maxRate === topRate).length;
+          if (sharedBy > 1) ties++;
+          else wins++;
+        }
+      }
+    });
+
+    return { platform, wins, ties, present };
+  });
+}
+
+/** Same shape as buildScorecard, but counts wins on lowest min-investment
+ *  (cheapest entry) per tenure instead of highest rate. Unlike product type,
+ *  min-investment data exists across every platform, so this is a fair,
+ *  always-comparable metric. */
+export function buildAccessScorecard(rows: TenureRow[], platforms: string[]): Scorecard[] {
+  return platforms.map((platform) => {
+    let wins = 0;
+    let ties = 0;
+    let present = 0;
+
+    rows.forEach((row) => {
+      const mine = row.stats.find((s) => s.platform === platform);
+      if (mine && mine.count > 0) present++;
+      if (mine && mine.minInvestment !== null) {
+        const withInv = row.stats.filter((s) => s.minInvestment !== null);
+        const lowest = Math.min(...withInv.map((s) => s.minInvestment!));
+        if (mine.minInvestment === lowest) {
+          const sharedBy = withInv.filter((s) => s.minInvestment === lowest).length;
           if (sharedBy > 1) ties++;
           else wins++;
         }
