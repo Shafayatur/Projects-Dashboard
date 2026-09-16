@@ -1,5 +1,10 @@
 import type { TenureRow } from "@/lib/compare";
 
+function fmtMoney(v: number | null) {
+  if (v === null) return null;
+  return `৳${v.toLocaleString()}`;
+}
+
 export default function TenureTable({
   rows,
   platforms,
@@ -31,9 +36,16 @@ export default function TenureTable({
               {row.stats.map((s) => (
                 <td key={s.platform} className="px-4 py-3 text-center font-mono">
                   {s.rate !== null ? (
-                    <span className={s.platform === row.rateLeader ? "text-lead font-black" : "text-ink"}>
-                      {s.rate}%
-                    </span>
+                    <div>
+                      <span className={s.platform === row.rateLeader ? "text-lead font-black" : "text-ink"}>
+                        {s.rate}%
+                      </span>
+                      {s.minInvestment !== null && (
+                        <div className="text-xs text-muted font-normal mt-0.5">
+                          {fmtMoney(s.minInvestment)}
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <span className="text-muted">✕</span>
                   )}

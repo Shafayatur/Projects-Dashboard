@@ -51,7 +51,7 @@ export function buildTenureTable(projects: Project[], platforms: string[]): Tenu
       return {
         platform,
         count: matches.length,
-        rate: rates.length ? Math.min(...rates) : null,
+        rate: rates.length ? Math.max(...rates) : null,
         minInvestment: invs.length ? Math.min(...invs) : null
       };
     });
